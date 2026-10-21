@@ -141,13 +141,15 @@ button:focus-visible,input:focus-visible {
 .primary { width:100%; margin-top:18px; padding:15px; border:0; border-radius:13px; background:var(--lime); color:#17200f; font-size:14px; font-weight:900 }
 .secondary { flex:1; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--panel2); color:var(--text); font-size:12px; font-weight:750 }
 .actions { display:flex; gap:9px; margin-top:12px }
+
 .success { display:none; margin-top:20px; padding:27px 20px; border:1px solid #53663a; border-radius:20px; background:linear-gradient(145deg,#202b1b,#171d17); text-align:center }
 .success .emoji { font-size:40px }
-.success h2 { margin:10px 0 8px; font-size:25px }
+.success h2 { margin:10px 0 4px; font-size:25px }
+.streak-badge { display:inline-block; margin:8px 0 12px; padding:6px 14px; border-radius:99px; background:#293623; border:1px solid #53663a; color:var(--lime); font-size:12px; font-weight:900; letter-spacing:.5px }
 .success p { margin:0; color:#c0cbb9; font-size:13px }
-.rest { display:none; margin-top:15px; padding:25px 18px; border:1px solid var(--line); border-radius:20px; background:var(--panel) }
-.rest h2 { margin:8px 0; font-size:24px }
-.rest p { color:var(--muted); font-size:14px }
+
+.rest { display:none; margin-top:15px; padding:20px 18px; border:1px solid var(--line); border-radius:20px; background:var(--panel) }
+.rest p { margin:0 0 15px; color:#c0cbb9; font-size:14px }
 .footer { margin-top:28px; color:#657064; font-size:10px; letter-spacing:1.3px; text-align:center }
 @media(min-width:600px) { .app { padding-right:26px; padding-left:26px } .hero { padding:30px } .exercise { padding:16px } }
 </style>
@@ -197,18 +199,17 @@ button:focus-visible,input:focus-visible {
   </section>
 
   <section class="success" id="successSection">
-    <div class="emoji">🎉</div>
-    <h2>Well done today!</h2>
-    <p>You showed up for yourself. That's what counts. Take a breath, recover, and enjoy the rest of your day.</p>
+    <div class="emoji" id="successEmoji">🎉</div>
+    <h2 id="successHeading">Well done today!</h2>
+    <div class="streak-badge" id="streakBadge">🔥 1 DAY STREAK</div>
+    <p id="successMessage">You showed up for yourself. That's what counts.</p>
     <button class="primary" id="successResetBtn">Reset this day's workout</button>
   </section>
 
   <section class="rest" id="restSection">
-    <div class="eyebrow">RECOVERY DAY</div>
-    <h2>Rest and recharge.</h2>
-    <p><strong>Minimum goal: 5,000 steps.</strong></p>
-    <p>Give yourself space to recover physically and mentally. Enjoy an easy walk, relax, and come back refreshed.</p>
-    <div class="actions"><button class="secondary" id="restTodayBtn">Back to today</button></div>
+    <p>Aim for at least 5,000 steps to stay on track and recover.</p>
+    <button class="primary" id="stepsDoneBtn">Got my steps today ✓</button>
+    <div class="actions" style="margin-top:12px;"><button class="secondary" id="restTodayBtn">Back to today</button></div>
   </section>
 
   <div class="footer">SHOW UP · CHECK IT OFF · REPEAT</div>
@@ -287,6 +288,19 @@ function isVacation(d){try{return localStorage.getItem(key(d,"vacation"))==="tru
 function setVacation(d,v){try{localStorage.setItem(key(d,"vacation"),String(v))}catch(e){}}
 function sameDay(a,b){return dateKey(a)===dateKey(b)}
 function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+
+function calculateStreak(targetDate) {
+  let streak = 0;
+  let curr = new Date(targetDate);
+  curr.setHours(12,0,0,0);
+
+  // Count backwards day by day as long as they are marked done
+  while (isDone(curr)) {
+    streak++;
+    curr.setDate(curr.getDate() - 1);
+  }
+  return streak;
+}
 
 function readRounds(d,idx){
   try {
@@ -530,13 +544,31 @@ function render(scrollUp = false){
   restSection.style.display="none";
   successSection.style.display="none";
 
+  const streak = calculateStreak(selectedDate);
+
   if(restDay){
     document.getElementById("heroEyebrow").textContent="RECOVERY DAY";
     document.getElementById("workoutTitle").textContent="Rest & Recharge";
-    document.getElementById("workoutSubtitle").textContent="No scheduled weights today. Give yourself room to recover.";
+    document.getElementById("workoutSubtitle").textContent="5,000 steps minimum";
     document.getElementById("statusLabel").textContent="RECOVERY";
-    document.getElementById("exerciseCount").textContent="5,000 steps minimum";
-    restSection.style.display="block";
+    document.getElementById("exerciseCount").textContent="Rest Day";
+    
+    if(completed){
+      document.getElementById("heroEyebrow").textContent="SESSION COMPLETE";
+      document.getElementById("workoutTitle").textContent="You showed up.";
+      document.getElementById("workoutSubtitle").textContent="Steps goal completed. Enjoy your recovery.";
+      document.getElementById("statusLabel").textContent="WELL DONE";
+      document.getElementById("exerciseCount").textContent="Day completed ✓";
+      
+      document.getElementById("successEmoji").textContent = "👟";
+      document.getElementById("successHeading").textContent = "Steps Goal Unlocked!";
+      document.getElementById("streakBadge").textContent = `🔥 ${streak} DAY STREAK`;
+      document.getElementById("successMessage").textContent = "Getting your steps in is a big deal for active recovery and staying on track. Great job keeping active!";
+      
+      successSection.style.display="block";
+    } else {
+      restSection.style.display="block";
+    }
     return;
   }
 
@@ -546,6 +578,21 @@ function render(scrollUp = false){
     document.getElementById("workoutSubtitle").textContent="Today's session is complete. Enjoy your recovery.";
     document.getElementById("statusLabel").textContent="WELL DONE";
     document.getElementById("exerciseCount").textContent="Day completed ✓";
+
+    document.getElementById("successEmoji").textContent = "🎉";
+    document.getElementById("successHeading").textContent = "Well done today!";
+    document.getElementById("streakBadge").textContent = `🔥 ${streak} DAY STREAK`;
+
+    const streakMessages = [
+      "You showed up for yourself. That's what counts.",
+      "1 day down! Momentum is building.",
+      "2 days strong! Consistency is key.",
+      "3 days in a row! You're in a great groove.",
+      "4 days streak! Muscle and habit in the making.",
+      "5 day streak! Unstoppable force. Incredible work!"
+    ];
+    document.getElementById("successMessage").textContent = streakMessages[Math.min(streak, 5)];
+
     successSection.style.display="block";
     return;
   }
@@ -623,6 +670,7 @@ document.getElementById("vacationBtn").onclick=()=>{
 };
 
 document.getElementById("doneBtn").onclick=finishToday;
+document.getElementById("stepsDoneBtn").onclick=finishToday;
 document.getElementById("resetBtn").onclick=resetSelectedDay;
 document.getElementById("successResetBtn").onclick=resetSelectedDay;
 
