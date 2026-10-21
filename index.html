@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101311">
+<title>KIM'S V-TAPER WORKOUT</title>
+
+<style>
+:root {
+  --bg:#101311; --panel:#191e1a; --panel2:#202720;
+  --text:#f4f5ef; --muted:#9da79d; --line:#303a31;
+  --lime:#c8f169; --blue:#8dc8ff; --orange:#ffb86b;
+}
+* { box-sizing:border-box }
+body {
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.45;
+}
+button { font:inherit; cursor:pointer }
+button:focus-visible,input:focus-visible {
+  outline:2px solid var(--blue); outline-offset:3px;
+}
+.app {
+  max-width:680px; margin:auto;
+  padding:calc(18px + env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom));
+}
+.top { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:16px }
+.brand { font-size:14px; letter-spacing:.5px; font-weight:900; color:var(--lime) }
+.tag { font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:99px; padding:6px 10px; white-space:nowrap }
+.vacation-btn {
+  width:100%; margin-bottom:15px; padding:12px;
+  border:1px solid #4d6540; border-radius:13px;
+  background:#202a1b; color:var(--lime); font-size:13px; font-weight:800;
+}
+.vacation-btn.on { background:var(--lime); color:#17200f }
+.week-nav {
+  position:sticky; top:0; z-index:10; margin:0 -4px 18px;
+  padding:10px 4px 12px; background:var(--bg); border-bottom:1px solid #252d26;
+}
+.nav-label,.eyebrow { font-size:10px; text-transform:uppercase; letter-spacing:1.6px; color:var(--muted); font-weight:800 }
+.nav-label { margin:0 0 8px 3px }
+.week { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:5px }
+.day {
+  min-width:0; padding:9px 0 8px; border:1px solid var(--line);
+  border-radius:12px; background:var(--panel); color:var(--muted); text-align:center;
+}
+.day .letter { display:block; margin-bottom:5px; font-size:10px; font-weight:800 }
+.day .num { display:inline-block; font-size:14px; font-weight:800; color:var(--text) }
+.day.active { background:var(--lime); border-color:var(--lime); color:#17200f }
+.day.active .num { color:#17200f }
+.day.is-today { border:2px solid var(--blue); box-shadow:inset 0 0 0 1px var(--blue) }
+.day.is-today:not(.active) { background:#1b2933; color:var(--blue) }
+.day.is-today:not(.active) .num { color:var(--blue) }
+.day.is-today.active { border:2px solid var(--blue); box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--blue) }
+.day.is-done .num { text-decoration:line-through; text-decoration-thickness:2px }
+.day.is-done::after { content:"✓"; display:block; height:10px; margin-top:3px; font-size:9px; font-weight:900; color:var(--lime) }
+.day.active.is-done::after { color:#17200f }
+
+.hero {
+  position:relative; overflow:hidden; padding:23px;
+  border:1px solid #384431; border-radius:23px;
+  background:linear-gradient(135deg,#283323,#1a211a 70%);
+}
+.hero h1 {
+  position:relative; z-index:1; max-width:90%; margin:13px 0 10px;
+  font-size:clamp(30px,8vw,42px); line-height:1.04; letter-spacing:-1.3px;
+}
+.date { margin-top:7px; font-size:13px; color:#c4cec0 }
+.sub { max-width:95%; margin:0 0 20px; color:#bdc7b8; font-size:13px }
+.hero-bottom { display:flex; justify-content:space-between; align-items:center; gap:10px }
+.pill { display:inline-flex; align-items:center; gap:7px; padding:8px 11px; border-radius:99px; background:var(--lime); color:#17200f; font-size:10px; font-weight:900 }
+.dot { width:7px; height:7px; border-radius:50%; background:#17200f }
+.count { color:#c6d0c0; font-size:11px }
+
+.section-head { display:flex; justify-content:space-between; align-items:end; gap:12px; margin:25px 0 12px }
+.section-head h2 { margin:4px 0 0; font-size:20px; letter-spacing:-.4px }
+.small { color:var(--muted); font-size:11px }
+.progress { height:5px; margin-bottom:15px; overflow:hidden; border-radius:99px; background:#2b332b }
+.progress-in { width:0; height:100%; border-radius:99px; background:var(--lime); transition:width .2s }
+
+.group-title { margin:23px 0 8px; color:var(--lime); font-size:12px; font-weight:900; letter-spacing:1.2px; text-transform:uppercase }
+.group-description { margin:-2px 0 9px; color:var(--muted); font-size:12px }
+.exercise {
+  display:flex; align-items:flex-start; gap:12px; margin:9px 0; padding:14px;
+  border:1px solid var(--line); border-radius:16px; background:var(--panel);
+}
+.exercise.checked { border-color:#53663a; background:#1c2518 }
+.check {
+  appearance:none; display:grid; flex:0 0 22px; width:22px; height:22px;
+  margin:1px 0 0; place-items:center; border:1.5px solid #586357;
+  border-radius:7px; background:transparent;
+}
+.check:checked { border-color:var(--lime); background:var(--lime) }
+.check:checked::after { content:"✓"; color:#18200f; font-size:14px; font-weight:900 }
+.exercise-main { flex:1; min-width:0 }
+.exercise h3 { margin:0 0 5px; font-size:14px; font-weight:800 }
+.exercise.checked h3 { color:#aab69f; text-decoration:line-through }
+.prescription { color:var(--lime); font-size:12px; font-weight:750 }
+.note { margin-top:6px; color:var(--muted); font-size:12px }
+.badge { padding:4px 5px; border:1px solid #684a2e; border-radius:5px; color:var(--orange); font-size:9px; letter-spacing:.7px; text-transform:uppercase }
+
+.stretch-toggle {
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:0; border:0; background:transparent; color:var(--text);
+  text-align:left; font-weight:800; font-size:14px;
+}
+.stretch-toggle .arrow { color:var(--lime); transition:transform .2s }
+.stretch-toggle[aria-expanded="true"] .arrow { transform:rotate(180deg) }
+.stretch-details { margin-top:10px; padding:11px 12px; border-radius:10px; background:#131813; color:#c2cbbf; font-size:12px }
+.stretch-details ul { margin:0; padding-left:18px }
+.stretch-details li { margin:7px 0 }
+
+.plank-timer { margin-top:12px; padding:12px; background:#121712; border:1px solid #303a31; border-radius:12px }
+.timer-top { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px }
+.timer-round { color:var(--muted); font-size:11px; font-weight:750 }
+.timer-time { color:var(--lime); font-size:20px; font-weight:900; font-variant-numeric:tabular-nums }
+.timer-controls { display:flex; align-items:center; gap:10px }
+.play-btn {
+  flex:0 0 42px; width:42px; height:42px; border:0; border-radius:50%;
+  background:var(--lime); color:#17200f; font-size:17px; font-weight:900;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.play-btn:disabled { opacity:.45; cursor:default }
+.play-btn svg { width:16px; height:16px; fill:currentColor }
+.timer-bar { flex:1; height:6px; overflow:hidden; border-radius:99px; background:#303a31 }
+.timer-bar-in { width:0; height:100%; border-radius:99px; background:var(--lime) }
+.timer-hint { margin-top:8px; color:var(--muted); font-size:11px }
+
+.tip { margin-top:18px; padding:15px; border:1px solid var(--line); border-radius:15px; background:#171d17 }
+.tip strong { color:var(--lime); font-size:11px; letter-spacing:.7px; text-transform:uppercase }
+.tip p { margin:7px 0 0; color:#b6c0b2; font-size:12px }
+.primary { width:100%; margin-top:18px; padding:15px; border:0; border-radius:13px; background:var(--lime); color:#17200f; font-size:14px; font-weight:900 }
+.secondary { flex:1; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--panel2); color:var(--text); font-size:12px; font-weight:750 }
+.actions { display:flex; gap:9px; margin-top:12px }
+.success { display:none; margin-top:20px; padding:27px 20px; border:1px solid #53663a; border-radius:20px; background:linear-gradient(145deg,#202b1b,#171d17); text-align:center }
+.success .emoji { font-size:40px }
+.success h2 { margin:10px 0 8px; font-size:25px }
+.success p { margin:0; color:#c0cbb9; font-size:13px }
+.rest { display:none; margin-top:15px; padding:25px 18px; border:1px solid var(--line); border-radius:20px; background:var(--panel) }
+.rest h2 { margin:8px 0; font-size:24px }
+.rest p { color:var(--muted); font-size:14px }
+.footer { margin-top:28px; color:#657064; font-size:10px; letter-spacing:1.3px; text-align:center }
+@media(min-width:600px) { .app { padding-right:26px; padding-left:26px } .hero { padding:30px } .exercise { padding:16px } }
+</style>
+</head>
+
+<body>
+<main class="app">
+  <header class="top">
+    <div class="brand">KIM'S V-TAPER WORKOUT</div>
+    <div class="tag">5-DAY SPLIT</div>
+  </header>
+
+  <button class="vacation-btn" id="vacationBtn">✈ I'm on vacation</button>
+
+  <nav class="week-nav">
+    <div class="nav-label">YOUR WEEK · TAP A DAY TO SWITCH</div>
+    <div class="week" id="weekStrip"></div>
+  </nav>
+
+  <section class="hero">
+    <div class="eyebrow" id="heroEyebrow">YOUR DAILY SESSION</div>
+    <div class="date" id="dateLabel"></div>
+    <h1 id="workoutTitle">Loading workout...</h1>
+    <p class="sub" id="workoutSubtitle"></p>
+    <div class="hero-bottom">
+      <span class="pill"><span class="dot"></span><span id="statusLabel">READY WHEN YOU ARE</span></span>
+      <span class="count" id="exerciseCount"></span>
+    </div>
+  </section>
+
+  <section id="workoutSection">
+    <div class="section-head">
+      <div><div class="eyebrow">TODAY'S PLAN</div><h2 id="planHeading">Your checklist</h2></div>
+      <div class="small" id="durationLabel"></div>
+    </div>
+    <div class="progress"><div class="progress-in" id="progressBar"></div></div>
+    <div id="exerciseList"></div>
+    <div class="tip" id="trainingTip">
+      <strong>Training tip</strong>
+      <p>Use controlled reps and a weight that leaves about 1–3 good reps in reserve. Rest around 60–120 seconds between sets, or longer when needed.</p>
+    </div>
+    <button class="primary" id="doneBtn">I'm done for today ✓</button>
+    <div class="actions">
+      <button class="secondary" id="resetBtn">Reset this day's workout</button>
+      <button class="secondary" id="todayBtn">Back to today</button>
+    </div>
+  </section>
+
+  <section class="success" id="successSection">
+    <div class="emoji">🎉</div>
+    <h2>Well done today!</h2>
+    <p>You showed up for yourself. That's what counts. Take a breath, recover, and enjoy the rest of your day.</p>
+    <button class="primary" id="successResetBtn">Reset this day's workout</button>
+  </section>
+
+  <section class="rest" id="restSection">
+    <div class="eyebrow">RECOVERY DAY</div>
+    <h2>Rest and recharge.</h2>
+    <p><strong>Minimum goal: 5,000 steps.</strong></p>
+    <p>Give yourself space to recover physically and mentally. Enjoy an easy walk, relax, and come back refreshed.</p>
+    <div class="actions"><button class="secondary" id="restTodayBtn">Back to today</button></div>
+  </section>
+
+  <div class="footer">SHOW UP · CHECK IT OFF · REPEAT</div>
+</main>
+
+<script>
+const workouts = [
+  {name:"Upper Body A",focus:"Width Focus",subtitle:"Prioritize your side delts, lats, and upper chest.",items:[
+    ["Dumbbell Lateral Raises","4 sets × 12–15 reps"],
+    ["Single-Arm Dumbbell Rows","3 sets × 8–10 reps per side"],
+    ["Incline Dumbbell Bench Press","3 sets × 8–10 reps"],
+    ["Dumbbell Rear Delt Flyes","3 sets × 12–15 reps"]
+  ]},
+  {name:"Lower Body & Core",focus:"Strength + Stability",subtitle:"Build your lower body with controlled, balanced reps.",items:[
+    ["Goblet Squats","3 sets × 10–12 reps"],
+    ["Dumbbell Romanian Deadlifts (RDLs)","3 sets × 10–12 reps","Push your hips back and keep your spine neutral."],
+    ["Walking Dumbbell Lunges","3 sets × 10 steps per leg"],
+    ["Forearm Planks","3 rounds × 60 seconds","Complete three timed rounds to check this off.","TIMER"]
+  ]},
+  {name:"Upper Body B",focus:"Thickness Focus",subtitle:"Press, row, and finish with a focused arm superset.",items:[
+    ["Flat Dumbbell Press","3 sets × 8–10 reps"],
+    ["Two-Arm Bent-Over Dumbbell Rows","3 sets × 10–12 reps"],
+    ["Dumbbell Overhead Shoulder Press","3 sets × 8–10 reps"],
+    ["Hammer Curls + Overhead Triceps Extension","3 sets × 12 reps each","Do both exercises back-to-back, then rest.","Superset"]
+  ]},
+  {name:"Lower Body & Abs",focus:"Glutes + Core",subtitle:"Train your legs, calves, and core without overcomplicating it.",items:[
+    ["Dumbbell Sumo Squats","3 sets × 10–12 reps"],
+    ["Single-Leg Dumbbell Glute Bridges","3 sets × 12 reps per leg"],
+    ["Standing Dumbbell Calf Raises","4 sets × 15 reps"],
+    ["Deadbugs / Stomach Vacuums","3 sets × 10 reps / 20-second holds"]
+  ]},
+  {name:"V-Taper Isolation",focus:"Shoulders + Upper Body",subtitle:"Focused work for your shoulders, chest, lats, and biceps.",items:[
+    ["Dumbbell Lateral Raises · Heavy to Light","4 sets × 12, 12, 15, 20 reps","Reduce the weight as the reps increase."],
+    ["Incline Dumbbell Chest Flyes or Pushups","3 sets × 12–15 reps"],
+    ["Dumbbell Lat Pullovers","3 sets × 12 reps"],
+    ["Incline Dumbbell Bicep Curls","3 sets × 12 reps"]
+  ]}
+];
+
+const warmupItems = [
+  {title:"Body Stretches",kind:"stretches"},
+  {title:"Warm-up Walk",details:"5 minutes · Treadmill at 5 km/h · 1% incline"}
+];
+const walkItems = [
+  {title:"Fat-Burn Walk",details:"45 minutes minimum · Speed: 4.8–5.5 km/h · Incline: 3–6%",note:"Do this immediately after your weights session."}
+];
+const travelItems = [
+  ["Pushups","15–20 reps"],
+  ["Bodyweight Deep Squats","20 reps"],
+  ["Alternating Reverse Lunges","12 reps per leg"],
+  ["Forearm Plank","60 seconds","Aim for 4–5 rounds.","TIMER"]
+];
+const stretchBullets = [
+  "Arm Circles (15 forward and 15 backward)",
+  "Torso Twists (15 each side)",
+  "Leg Swings (10 forward and 10 lateral per leg)",
+  "Bodyweight Squat to Overhead Reach (10 reps)"
+];
+const dayNames=["MON","TUE","WED","THU","FRI","SAT","SUN"];
+let selectedDate=new Date();
+selectedDate.setHours(12,0,0,0);
+let activeIntervals = {};
+
+const PLAY_ICON = '▶';
+const PAUSE_ICON = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+
+function dateKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function mondayIndex(d){return (d.getDay()+6)%7}
+function workoutIndex(d){const n=mondayIndex(d);return n<5?n:-1}
+function key(d,type){return "kim-vt-"+type+"-"+dateKey(d)}
+function readChecks(d){try{return JSON.parse(localStorage.getItem(key(d,"checks"))||"[]")}catch(e){return []}}
+function saveChecks(d,a){try{localStorage.setItem(key(d,"checks"),JSON.stringify(a))}catch(e){}}
+function isDone(d){try{return localStorage.getItem(key(d,"done"))==="true"}catch(e){return false}}
+function setDone(d,v){try{localStorage.setItem(key(d,"done"),String(v))}catch(e){}}
+function isVacation(d){try{return localStorage.getItem(key(d,"vacation"))==="true"}catch(e){return false}}
+function setVacation(d,v){try{localStorage.setItem(key(d,"vacation"),String(v))}catch(e){}}
+function sameDay(a,b){return dateKey(a)===dateKey(b)}
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+
+function readRounds(d,idx){
+  try {
+    const data=JSON.parse(localStorage.getItem(key(d,"plankrounds"))||"{}");
+    return Number(data[idx]||0);
+  } catch(e){return 0}
+}
+function saveRounds(d,idx,value){
+  try {
+    const data=JSON.parse(localStorage.getItem(key(d,"plankrounds"))||"{}");
+    data[idx]=value;
+    localStorage.setItem(key(d,"plankrounds"),JSON.stringify(data));
+  } catch(e){}
+}
+function stopAllTimers(){
+  Object.values(activeIntervals).forEach(clearInterval);
+  activeIntervals={};
+}
+function clearTimerProgress(d){
+  try{localStorage.removeItem(key(d,"plankrounds"))}catch(e){}
+}
+function resetSelectedDay(){
+  const d=new Date(selectedDate);
+  const checks=readChecks(d);
+  const hasProgress=checks.some(Boolean) ||
+    Object.values(JSON.parseSafe ? {} : {}).length > 0;
+  const rounds=readRounds(d, "regular-plank");
+  const travelRounds=readRounds(d, "travel-plank");
+  const hasTimerProgress=rounds>0 || travelRounds>0;
+
+  if((hasProgress || hasTimerProgress || isDone(d)) &&
+     !confirm("Reset this day's workout? Your checklist and plank timer progress will be cleared.")) return;
+
+  stopAllTimers();
+  saveChecks(d,[]);
+  clearTimerProgress(d);
+  setDone(d,false);
+  render();
+}
+
+function makePlankTimer(roundKey,rounds,checkbox,row,isTravel){
+  const timer=el("div","plank-timer");
+  const top=el("div","timer-top");
+  const roundLabelText = isTravel ? (rounds > 0 ? "COMPLETED " + rounds + " ROUND" + (rounds > 1 ? "S" : "") : "TRAVEL MODE") : ("ROUND " + Math.min(rounds+1,3) + " OF 3");
+  const roundLabel=el("div","timer-round",roundLabelText);
+  const timeLabel=el("div","timer-time","01:00");
+  top.append(roundLabel,timeLabel);
+
+  const controls=el("div","timer-controls");
+  const play=el("button","play-btn");
+  play.innerHTML=PLAY_ICON;
+  play.type="button";
+  play.setAttribute("aria-label","Start 60-second plank timer");
+  const bar=el("div","timer-bar");
+  const barIn=el("div","timer-bar-in");
+  bar.append(barIn);
+  controls.append(play,bar);
+
+  const hintText = isTravel ? "Press play to start a 60-second hold." : (rounds>=3 ? "All 3 rounds completed." : "Press play to start your 60-second hold.");
+  const hint=el("div","timer-hint",hintText);
+  timer.append(top,controls,hint);
+
+  let remaining=60;
+  let running=false;
+  let interval=null;
+
+  function paint(){
+    timeLabel.textContent="00:"+String(remaining).padStart(2,"0");
+    barIn.style.width=((60-remaining)/60*100)+"%";
+  }
+  function stop(){
+    if(interval)clearInterval(interval);
+    interval=null;running=false;
+    play.innerHTML=PLAY_ICON;
+    play.setAttribute("aria-label","Resume 60-second plank timer");
+  }
+  function start(){
+    if((!isTravel && rounds>=3) || running)return;
+    running=true;
+    play.innerHTML=PAUSE_ICON;
+    play.setAttribute("aria-label","Pause plank timer");
+    interval=setInterval(()=>{
+      remaining--;
+      paint();
+      if(remaining<=0){
+        clearInterval(interval);interval=null;running=false;
+        rounds=readRounds(selectedDate,roundKey)+1;
+        if(!isTravel) rounds=Math.min(3,rounds);
+        saveRounds(selectedDate,roundKey,rounds);
+        const updated=readChecks(selectedDate);
+        if(!isTravel && rounds>=3)updated[checkbox.dataset.index]=true;
+        saveChecks(selectedDate,updated);
+        render();
+      }
+    },1000);
+  }
+
+  play.onclick=()=>{
+    if(!isTravel && rounds>=3)return;
+    if(running){stop();hint.textContent="Timer paused. Press play to continue.";return}
+    start();
+  };
+
+  if(!isTravel && rounds>=3){
+    play.disabled=true;play.textContent="✓";
+    timeLabel.textContent="DONE";barIn.style.width="100%";
+    hint.textContent="All 3 rounds completed.";
+  }else{
+    paint();
+  }
+  return timer;
+}
+
+function makeExercise(item,index,checks,roundKey,isTravel){
+  const title=item.title || item[0];
+  const details=item.details || item[1] || "";
+  const note=item.note || item[2] || "";
+  const badge=item.badge || item[3] || null;
+  const isTimer=badge==="TIMER";
+  const rounds=isTimer?readRounds(selectedDate,roundKey):0;
+  const checked=isTimer ? (!isTravel && rounds>=3) : !!checks[index];
+
+  const row=el("div","exercise"+(checked?" checked":""));
+  const cb=el("input","check");
+  cb.type="checkbox";cb.checked=checked;
+  cb.dataset.index=index;
+  cb.setAttribute("aria-label","Mark "+title+" complete");
+
+  if(isTimer && !isTravel){
+    cb.disabled=true;
+  }else{
+    cb.addEventListener("change",()=>{
+      const updated=readChecks(selectedDate);
+      updated[index]=cb.checked;saveChecks(selectedDate,updated);render();
+    });
+  }
+
+  const main=el("div","exercise-main");
+
+  if(item.kind==="stretches"){
+    const toggle=el("button","stretch-toggle");
+    toggle.type="button";toggle.setAttribute("aria-expanded","false");
+    toggle.append(el("span","",title),el("span","arrow","⌄"));
+    const detailsBox=el("div","stretch-details");
+    detailsBox.hidden=true;
+    const ul=el("ul");
+    stretchBullets.forEach(t=>ul.append(el("li","",t)));
+    detailsBox.append(ul);
+    toggle.addEventListener("click",()=>{
+      const expanded=toggle.getAttribute("aria-expanded")==="true";
+      toggle.setAttribute("aria-expanded",String(!expanded));
+      detailsBox.hidden=expanded;
+    });
+    main.append(toggle,detailsBox);
+  }else{
+    main.append(el("h3","",title));
+    if(details)main.append(el("div","prescription",details));
+    if(note && !isTimer)main.append(el("div","note",note));
+    if(isTimer){
+      main.append(makePlankTimer(roundKey,rounds,cb,row,isTravel));
+    }
+  }
+
+  row.append(cb,main);
+  if(badge && badge!=="TIMER")row.append(el("span","badge",badge));
+  return row;
+}
+
+function addGroup(list,title,description,items,checks,offset,groupType){
+  list.append(el("div","group-title",title));
+  if(description)list.append(el("div","group-description",description));
+
+  items.forEach((item,i)=>{
+    let roundKey=null;
+    const isTravel=groupType==="travel";
+    if((item.badge||item[3])==="TIMER"){
+      roundKey=isTravel?"travel-plank":"regular-plank";
+    }
+    list.append(makeExercise(item,offset+i,checks,roundKey,isTravel));
+  });
+}
+
+function finishToday(){
+  stopAllTimers();
+  saveChecks(selectedDate,[]);
+  setDone(selectedDate,true);
+  render();
+}
+function resetToday(){
+  stopAllTimers();
+  saveChecks(selectedDate,[]);
+  clearTimerProgress(selectedDate);
+  setDone(selectedDate,false);
+  render();
+}
+
+function render(){
+  stopAllTimers();
+
+  const today=new Date();today.setHours(12,0,0,0);
+  const idx=workoutIndex(selectedDate);
+  const vacation=isVacation(selectedDate);
+  const completed=isDone(selectedDate);
+  const restDay=idx<0&&!vacation;
+
+  document.getElementById("dateLabel").textContent=selectedDate.toLocaleDateString(undefined,{
+    weekday:"long",month:"long",day:"numeric",year:"numeric"
+  });
+
+  const strip=document.getElementById("weekStrip");
+  strip.innerHTML="";
+  const monday=new Date(selectedDate);
+  monday.setDate(monday.getDate()-mondayIndex(monday));
+
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    const b=el("button","day");
+    if(sameDay(d,selectedDate))b.classList.add("active");
+    if(sameDay(d,today))b.classList.add("is-today");
+    if(isDone(d))b.classList.add("is-done");
+    b.innerHTML='<span class="letter">'+dayNames[i]+'</span><span class="num">'+d.getDate()+'</span>';
+    b.setAttribute("aria-label",d.toLocaleDateString(undefined,{
+      weekday:"long",month:"long",day:"numeric"
+    })+(isDone(d)?", completed":""));
+    b.onclick=()=>{selectedDate=new Date(d);selectedDate.setHours(12,0,0,0);render()};
+    strip.append(b);
+  }
+
+  const vacationBtn=document.getElementById("vacationBtn");
+  vacationBtn.textContent=vacation?"✈ Vacation mode is on · Switch back":"✈ I'm on vacation";
+  vacationBtn.classList.toggle("on",vacation);
+
+  const workoutSection=document.getElementById("workoutSection");
+  const restSection=document.getElementById("restSection");
+  const successSection=document.getElementById("successSection");
+  workoutSection.style.display="none";
+  restSection.style.display="none";
+  successSection.style.display="none";
+
+  if(restDay){
+    document.getElementById("heroEyebrow").textContent="RECOVERY DAY";
+    document.getElementById("workoutTitle").textContent="Rest & Recharge";
+    document.getElementById("workoutSubtitle").textContent="No scheduled weights today. Give yourself room to recover.";
+    document.getElementById("statusLabel").textContent="RECOVERY";
+    document.getElementById("exerciseCount").textContent="5,000 steps minimum";
+    restSection.style.display="block";
+    return;
+  }
+
+  if(completed){
+    document.getElementById("heroEyebrow").textContent="SESSION COMPLETE";
+    document.getElementById("workoutTitle").textContent="You showed up.";
+    document.getElementById("workoutSubtitle").textContent="Today's session is complete. Enjoy your recovery.";
+    document.getElementById("statusLabel").textContent="WELL DONE";
+    document.getElementById("exerciseCount").textContent="Day completed ✓";
+    successSection.style.display="block";
+    return;
+  }
+
+  workoutSection.style.display="block";
+  const list=document.getElementById("exerciseList");
+  list.innerHTML="";
+  const checks=readChecks(selectedDate);
+  let allItems=[],title,subtitle,focus;
+
+  if(vacation){
+    title="Hotel Bodyweight Circuit";
+    focus="No Equipment Required";
+    subtitle="A simple travel workout to keep you moving while you're away.";
+    const travelChecklist=travelItems.map(x=>({title:x[0],details:x[1],note:x[2],badge:x[3]}));
+    addGroup(list,"Hotel Bodyweight Circuit","Aim for 4–5 rounds. Approximately 15–25 minutes, depending on your pace and rest breaks.",travelChecklist,checks,0,"travel");
+    allItems=travelItems;
+    const tip=el("div","tip");
+    tip.append(el("strong","","Daily activity"));
+    tip.append(el("p","","Prioritize walking while sightseeing. Aim for 10,000 steps throughout the day."));
+    list.append(tip);
+    document.getElementById("trainingTip").style.display="none";
+    document.getElementById("planHeading").textContent="Travel checklist";
+    document.getElementById("durationLabel").textContent="15–25 minutes";
+  }else{
+    const w=workouts[idx];
+    title=w.name;focus=w.focus;subtitle=w.subtitle;
+
+    addGroup(list,"1 · Warm-up","Get your body ready before lifting.",warmupItems,checks,0,"regular");
+    addGroup(list,"2 · Exercise","Follow your scheduled workout.",w.items.map(x=>({
+      title:x[0],details:x[1],note:x[2],badge:x[3]
+    })),checks,warmupItems.length,"regular");
+    addGroup(list,"3 · Fat-Burn Walk","Complete this immediately after your weights session.",walkItems,checks,warmupItems.length+w.items.length,"regular");
+
+    allItems=[...warmupItems,...w.items,...walkItems];
+    document.getElementById("trainingTip").style.display="block";
+    document.getElementById("planHeading").textContent="Your checklist";
+    document.getElementById("durationLabel").textContent=allItems.length+" checklists";
+  }
+
+  document.getElementById("heroEyebrow").textContent=vacation?"TRAVEL MODE":"YOUR DAILY SESSION";
+  document.getElementById("workoutTitle").textContent=title;
+  document.getElementById("workoutSubtitle").textContent=focus+" · "+subtitle;
+  document.getElementById("statusLabel").textContent="READY WHEN YOU ARE";
+
+  const total=allItems.length;
+  let checked=0;
+  allItems.forEach((item,i)=>{
+    const isPlank=(item.badge==="TIMER"||item[3]==="TIMER");
+    if(isPlank && !vacation){
+      const roundKey="regular-plank";
+      if(readRounds(selectedDate,roundKey)>=3)checked++;
+    }else if(checks[i])checked++;
+  });
+  document.getElementById("exerciseCount").textContent=checked+" / "+total+" checked";
+  document.getElementById("progressBar").style.width=(total?checked/total*100:0)+"%";
+}
+
+document.getElementById("vacationBtn").onclick=()=>{
+  const next=!isVacation(selectedDate);
+  const checks=readChecks(selectedDate);
+  const hasChecks=checks.some(Boolean);
+  const hasRounds=readRounds(selectedDate,"regular-plank")>0 ||
+                  readRounds(selectedDate,"travel-plank")>0;
+
+  if((hasChecks||hasRounds||isDone(selectedDate)) &&
+     !confirm("Switch workout mode for this date? This will clear the current checklist and completion status.")) return;
+
+  stopAllTimers();
+  setVacation(selectedDate,next);
+  setDone(selectedDate,false);
+  saveChecks(selectedDate,[]);
+  clearTimerProgress(selectedDate);
+  render();
+};
+
+document.getElementById("doneBtn").onclick=finishToday;
+document.getElementById("resetBtn").onclick=resetSelectedDay;
+document.getElementById("successResetBtn").onclick=resetSelectedDay;
+
+function goToday(){
+  selectedDate=new Date();
+  selectedDate.setHours(12,0,0,0);
+  render();
+}
+document.getElementById("todayBtn").onclick=goToday;
+document.getElementById("restTodayBtn").onclick=goToday;
+
+render();
+</script>
+</body>
+</html>
