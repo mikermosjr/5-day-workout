@@ -6,6 +6,13 @@
 <meta name="theme-color" content="#101311">
 <title>KIM'S V-TAPER WORKOUT</title>
 
+<!-- iOS Home Screen Icon & Web App Settings -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="V-Taper">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23101311'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='58'>🏋️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='80'>🏋️</text></svg>">
+
 <style>
 :root {
   --bg:#101311; --panel:#191e1a; --panel2:#202720;
@@ -466,18 +473,22 @@ function finishToday(){
   stopAllTimers();
   saveChecks(selectedDate,[]);
   setDone(selectedDate,true);
-  render();
+  render(true);
 }
 function resetToday(){
   stopAllTimers();
   saveChecks(selectedDate,[]);
   clearTimerProgress(selectedDate);
   setDone(selectedDate,false);
-  render();
+  render(true);
 }
 
-function render(){
+function render(scrollUp = false){
   stopAllTimers();
+
+  if(scrollUp) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   const today=new Date();today.setHours(12,0,0,0);
   const idx=workoutIndex(selectedDate);
